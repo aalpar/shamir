@@ -68,6 +68,80 @@ pp. 339-352.
 > ever" to "compromise fewer than k shares per refresh period." This is the
 > basis for `pkg/refresh/`.
 
+## Asynchronous Proactive Secret Sharing
+
+Cachin, C., Kursawe, K., Lysyanskaya, A., and Strobl, R. (2002).
+"Asynchronous Verifiable Secret Sharing and Proactive Cryptosystems."
+*Proceedings of the 9th ACM Conference on Computer and Communications
+Security (CCS '02)*, pp. 88-97.
+<https://eprint.iacr.org/2002/134.pdf>
+
+> First practical verifiable secret sharing protocol for asynchronous
+> networks, with proactive refresh. Identifies the fundamental
+> privacy–correctness trade-off in async settings: the adversary can either
+> cause the secret to be lost (preserving privacy) or learn it (preserving
+> correctness), and this trade-off "seems unavoidable in asynchronous
+> networks." Relevant to the operator layer: Kubernetes offers bounded
+> network delays (not truly adversarial async), so the trade-off is
+> manageable, but the protocol structure informs how to handle partial
+> refresh failures. See also: `docs/research/crdt-async-refresh.md`.
+
+Zhou, L., Schneider, F.B., and van Renesse, R. (2005). "APSS: Proactive
+Secret Sharing in Asynchronous Systems." *ACM Transactions on Information
+and System Security (TISSEC)*, vol 8, no 3, pp. 259-286.
+<https://dl.acm.org/doi/10.1145/1085126.1085127>
+
+> Full asynchronous proactive refresh protocol. Key advantage over
+> synchronous PSS: inherently more robust against denial-of-service attacks
+> that slow processor execution or delay message delivery. Tolerates attacks
+> that synchronous PSS protocols cannot. Directly relevant to the operator:
+> K8s pod evictions and node failures during refresh are equivalent to async
+> message delays.
+
+Levrat, L., Rambaud, M., and Urban, G. (2022). "Breaking the t<n/3
+Consensus Bound: Asynchronous Dynamic Proactive Secret Sharing under Honest
+Majority." *IACR ePrint Archive*, Report 2022/619.
+<https://eprint.iacr.org/2022/619>
+
+> Key result for async refresh: proactive share refresh does NOT require
+> consensus on a unique set of shares. Parties only need a common (partial)
+> view of committed shares — an eventual-consistency paradigm suffices for
+> correctness. Achieves PSS for any threshold t < n with guaranteed output
+> delivery in a completely asynchronous network. This paper bridges
+> threshold cryptography and distributed systems consistency models. See
+> also: `docs/research/crdt-async-refresh.md` for the CRDT connection.
+
+Günther, D., Das, S., and Kokoris-Kogias, L. (2022). "Practical
+Asynchronous Proactive Secret Sharing and Key Refresh." *IACR ePrint
+Archive*, Report 2022/1586.
+<https://eprint.iacr.org/2022/1586>
+
+> Two practical constructions for async proactive secret sharing: O(n³)
+> communication complexity and a sortition-based variant at O(cn²). Targets
+> decentralized systems (blockchains) but the protocol structure applies to
+> any distributed threshold key management, including K8s operators.
+
+Yurek, T., Luo, L., Gu, J., and Kate, A. (2023). "Robust Asynchronous
+DPSS and its Applications." *Proceedings of the 32nd USENIX Security
+Symposium*, pp. 1537-1554.
+<https://www.usenix.org/system/files/usenixsecurity23-yurek.pdf>
+
+> Robust async dynamic-committee proactive secret sharing (DPSS). Shows
+> that synchronous DPSS protocols (like COBRA) suffer asymptotic
+> performance hits (O(n³) → O(n⁴)) during periods of asynchrony. Async
+> protocols limit damage from network partitions and slow nodes. Relevant
+> to the operator: K8s cluster upgrades, node drains, and network policies
+> can cause transient async behavior.
+
+Hu, J., et al. (2025). "Optimistic Asynchronous Dynamic-committee
+Proactive Secret Sharing." *IACR ePrint Archive*, Report 2025/880.
+<https://eprint.iacr.org/2025/880>
+
+> First async DPSS protocol with O(n²) message complexity in all scenarios.
+> Achieves O(λn²) communication in the optimistic case (all nodes honest,
+> synchronous network) and O(λn³) worst case. Represents the current
+> state-of-the-art in async proactive secret sharing efficiency.
+
 ## Distributed Key Generation
 
 Gennaro, R., Jarecki, S., Krawczyk, H., and Rabin, T. (1999). "Secure
@@ -194,3 +268,48 @@ Notes in Computer Science, vol 2248, pp. 514-532.
 > ECDSA, threshold BLS requires no interactive protocol beyond share
 > distribution, because signature shares combine linearly. A natural
 > candidate for threshold signing in the Kubernetes operator.
+
+## Conflict-Free Replicated Data Types (CRDTs)
+
+Shapiro, M., Preguiça, N., Baquero, C., and Zawirski, M. (2011). "A
+comprehensive study of Convergent and Commutative Replicated Data Types."
+*INRIA Technical Report*, RR-7506.
+
+> The canonical CRDT formalization. State-based CRDTs (CvRDTs) require a
+> join semilattice: merge must be commutative, associative, and idempotent.
+> Operation-based CRDTs (CmRDTs) require commutative operations. Proactive
+> share refresh is structurally a CmRDT — zero-sharing deltas are
+> commutative operations over GF(p). See `docs/research/crdt-async-refresh.md`
+> for the detailed mapping between CRDT concepts and share refresh.
+
+Tsaloli, G., Bai, S., and Nergaard, H. (2023). "General-Purpose Secure
+Conflict-free Replicated Data Types." *IACR ePrint Archive*, Report
+2023/584.
+<https://eprint.iacr.org/2023/584.pdf>
+
+> Goes the opposite direction from our use case: uses MPC to *secure*
+> CRDTs, not CRDT structure *within* cryptographic protocols. Each CRDT
+> replica is realized by a group of MPC parties. Included for completeness
+> as the closest published intersection of CRDTs and threshold cryptography.
+
+Helland, P. (2007). "Life beyond Distributed Transactions: an Apostate's
+Opinion." *Proceedings of the 3rd Biennial Conference on Innovative Data
+Systems Research (CIDR)*.
+
+> Argues for "apologize rather than ask permission" in distributed systems:
+> use compensation and detection rather than coordination and prevention.
+> This framing — post-condition detection vs. pre-condition enforcement —
+> directly applies to async proactive refresh: instead of enforcing
+> synchronous refresh rounds, detect and compensate for partial application.
+
+Kleppmann, M., Wiggins, A., van Hardenberg, P., and McGranaghan, M. (2019).
+"Local-First Software: You Own Your Data." *Proceedings of the 2019 ACM
+SIGPLAN International Symposium on New Ideas, New Paradigms, and Reflections
+on Programming and Software (Onward!)*, pp. 154-178.
+
+> The local-first software manifesto. Argues that data should live on the
+> user's device with peer-to-peer sync, not on centralized servers. CRDTs
+> are the enabling technology. Relevant context for understanding why CRDT
+> concepts apply to distributed key management: both problems involve
+> replicas making independent updates that must converge without central
+> coordination.
