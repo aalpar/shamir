@@ -1,0 +1,146 @@
+# Bibliography
+
+Foundational references for the threshold cryptography, secret sharing
+schemes, finite field arithmetic, and verifiable protocols used in Shamir.
+
+## Secret Sharing
+
+Shamir, A. (1979). "How to Share a Secret." *Communications of the ACM*,
+vol 22, no 11, pp. 612-613.
+<https://doi.org/10.1145/359168.359176>
+
+> The foundational paper. Defines the (k, n) threshold scheme: a secret is
+> split into n shares such that any k shares reconstruct it, but k-1 shares
+> reveal nothing. The construction uses polynomial interpolation over a
+> finite field — a degree-(k-1) polynomial where the secret is f(0) and
+> shares are evaluations at distinct nonzero points. This paper is the
+> direct basis for `pkg/sss/`.
+
+Blakley, G.R. (1979). "Safeguarding Cryptographic Keys." *Proceedings of
+the National Computer Conference*, AFIPS, vol 48, pp. 313-317.
+
+> Independently proposes secret sharing using geometry: k shares define k
+> hyperplanes in k-dimensional space whose intersection is the secret point.
+> Mathematically equivalent in capability to Shamir's scheme but less
+> efficient in practice (shares are larger). Worth understanding as the
+> "road not taken" — it clarifies why polynomial interpolation won: shares
+> are single field elements rather than geometric coordinates.
+
+## Verifiable Secret Sharing
+
+Feldman, P. (1987). "A Practical Scheme for Non-interactive Verifiable
+Secret Sharing." *Proceedings of the 28th Annual Symposium on Foundations
+of Computer Science (FOCS)*, pp. 427-438.
+<https://doi.org/10.1109/SFCS.1987.4>
+
+> Extends Shamir's scheme so shareholders can verify their shares without
+> interaction. The dealer publishes commitments C_j = g^{a_j} mod p for
+> each polynomial coefficient a_j. A shareholder with share (i, y_i) checks
+> that g^{y_i} = product of C_j^{i^j}. Computationally hiding — the
+> commitments reveal nothing about the secret *if* the discrete log problem
+> is hard. This is the basis for `pkg/vss/` Feldman mode.
+
+Pedersen, T.P. (1991). "Non-Interactive and Information-Theoretic Secure
+Verifiable Secret Sharing." *Advances in Cryptology — CRYPTO '91*, Lecture
+Notes in Computer Science, vol 576, pp. 129-140.
+<https://doi.org/10.1007/3-540-46766-1_9>
+
+> Strengthens Feldman's scheme to information-theoretic hiding: commitments
+> reveal nothing about the secret even against unbounded adversaries. Uses
+> two generators g, h where log_g(h) is unknown, with commitments
+> C_j = g^{a_j} * h^{b_j}. The trade-off is a second random polynomial
+> and larger commitment structures. This is the basis for `pkg/vss/`
+> Pedersen mode.
+
+## Proactive Security
+
+Herzberg, A., Jarecki, S., Krawczyk, H., and Yung, M. (1995). "Proactive
+Secret Sharing Or: How to Cope With Perpetual Leakage." *Advances in
+Cryptology — CRYPTO '95*, Lecture Notes in Computer Science, vol 963,
+pp. 339-352.
+<https://doi.org/10.1007/3-540-44750-4_27>
+
+> Addresses the fundamental weakness of static secret sharing: over time,
+> an adversary may compromise k shares. Proactive refresh generates new
+> shares of the same secret periodically — each participant adds shares of
+> a random zero-polynomial to their existing share. Old shares become
+> useless. The security model shifts from "compromise fewer than k shares
+> ever" to "compromise fewer than k shares per refresh period." This is the
+> basis for `pkg/refresh/`.
+
+## Distributed Key Generation
+
+Gennaro, R., Jarecki, S., Krawczyk, H., and Rabin, T. (1999). "Secure
+Distributed Key Generation for Discrete-Log Based Cryptosystems."
+*Advances in Cryptology — EUROCRYPT '99*, Lecture Notes in Computer
+Science, vol 1592, pp. 295-310.
+<https://doi.org/10.1007/3-540-48910-X_21>
+
+> Removes the trusted dealer assumption. Instead of one party generating
+> and distributing shares, all participants jointly generate a shared secret
+> where no single party ever knows the complete secret. Uses Pedersen VSS
+> as a building block — each participant acts as a dealer for a random
+> value, and the final shared secret is the sum. Relevant for the
+> Kubernetes operator's key ceremony workflow, where trusting a single
+> controller with the plaintext secret defeats the purpose of threshold
+> protection.
+
+## Number Theory Foundations
+
+Hardy, G.H. and Wright, E.M. (2008). *An Introduction to the Theory of
+Numbers*. 6th ed. Oxford University Press. ISBN 978-0-19-921986-5.
+
+> Classical introduction to number theory. Chapters on congruences and
+> modular arithmetic (Ch. 5-6), quadratic residues (Ch. 6), and the
+> distribution of primes (Ch. 22) provide the mathematical foundations
+> for finite field arithmetic. The Extended Euclidean Algorithm for
+> modular inverse — used in `pkg/field/` — traces to the treatment of
+> continued fractions and the Euclidean algorithm in Chapter 10.
+
+Shoup, V. (2009). *A Computational Introduction to Number Theory and
+Algebra*. 2nd ed. Cambridge University Press.
+<https://shoup.net/ntb/>
+
+> Free textbook bridging number theory and practical computation. Chapter 2
+> (congruences) and Chapter 12 (polynomial arithmetic over finite fields)
+> directly inform the implementations in `pkg/field/` and `pkg/polynomial/`.
+> The treatment of Lagrange interpolation in the context of error-correcting
+> codes (Chapter 17) provides useful intuition for why polynomial-based
+> secret sharing is robust.
+
+## Information-Theoretic Security
+
+Shannon, C.E. (1949). "Communication Theory of Secrecy Systems." *Bell
+System Technical Journal*, vol 28, no 4, pp. 656-715.
+<https://doi.org/10.1002/j.1538-7305.1949.tb00928.x>
+
+> Defines perfect secrecy: an encryption scheme is perfectly secret if
+> the ciphertext reveals no information about the plaintext, regardless
+> of computational power. Shamir's scheme achieves this — any k-1 shares
+> are statistically independent of the secret. This is not just a
+> historical curiosity; it's the specific security guarantee that
+> distinguishes SSS from computational schemes. Pedersen VSS preserves
+> this property for commitments; Feldman VSS does not.
+
+## Threshold Signatures (Future Extensions)
+
+Gennaro, R. and Goldfeder, S. (2020). "One Round Threshold ECDSA with
+Identifiable Abort." *Cryptology ePrint Archive*, Report 2020/540.
+<https://eprint.iacr.org/2020/540>
+
+> Threshold ECDSA allowing k-of-n parties to jointly produce a valid
+> ECDSA signature without any party knowing the full signing key.
+> "Identifiable abort" means if a party misbehaves, others can identify
+> who. Relevant for the signing use case: distributed certificate signing
+> or admission webhook signing in Kubernetes without a single key holder.
+
+Boneh, D., Lynn, B., and Shacham, H. (2001). "Short Signatures from
+the Weil Pairing." *Advances in Cryptology — ASIACRYPT 2001*, Lecture
+Notes in Computer Science, vol 2248, pp. 514-532.
+<https://doi.org/10.1007/3-540-45682-1_30>
+
+> Introduces BLS signatures based on bilinear pairings on elliptic
+> curves. BLS signatures are naturally threshold-friendly — unlike
+> ECDSA, threshold BLS requires no interactive protocol beyond share
+> distribution, because signature shares combine linearly. A natural
+> candidate for threshold signing in the Kubernetes operator.

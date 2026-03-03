@@ -1,0 +1,3 @@
+resources:
+- bases/threshold.shamir.io_thresholdsecrets.yaml
+- bases/threshold.shamir.io_shareholders.yaml

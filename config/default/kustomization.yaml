@@ -1,0 +1,8 @@
+namespace: shamir-system
+
+namePrefix: shamir-
+
+resources:
+- ../crd
+- ../rbac
+- ../manager

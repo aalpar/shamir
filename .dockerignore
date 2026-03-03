@@ -1,0 +1,27 @@
+# Version control
+.git/
+.gitignore
+
+# Documentation
+docs/
+*.md
+LICENSE
+
+# IDE
+.idea/
+.vscode/
+
+# CI/CD
+.github/
+
+# Build artifacts
+bin/
+dist/
+cover.out
+*.out
+
+# Dev configs
+.claude/
+.serena/
+.devcontainer/
+private/
