@@ -155,6 +155,23 @@ vol 9, no 9, pp. 909-922.
 > operator evolves beyond simple thresholds, this is the theoretical
 > framework.
 
+### Note on General Access Structures
+
+Shamir's polynomial interpolation gives optimal share size (one field
+element) for (k, n) threshold access structures. For general access
+structures — including crumbling wall quorums — constructions exist via
+monotone span programs and monotone formulas, but share sizes blow up
+exponentially. The best known upper bound is O(2^{0.892n}) (Liu and
+Vaikuntanathan, STOC 2018, subsequently improved). The gap between upper
+and lower bounds has been open for ~40 years. This means crumbling wall
+access structures cannot reuse the polynomial machinery from `pkg/sss/`;
+they would require a fundamentally different algebraic layer. This is
+research-grade territory and out of scope for this project.
+
+See: Beimel, A. (2011). "Secret-Sharing Schemes: A Survey." *Coding and
+Cryptology*, Lecture Notes in Computer Science, vol 6639, pp. 11-46.
+<https://link.springer.com/chapter/10.1007/978-3-642-20901-7_2>
+
 ## Threshold Signatures (Future Extensions)
 
 Gennaro, R. and Goldfeder, S. (2020). "One Round Threshold ECDSA with
