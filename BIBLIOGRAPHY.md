@@ -122,6 +122,39 @@ System Technical Journal*, vol 28, no 4, pp. 656-715.
 > distinguishes SSS from computational schemes. Pedersen VSS preserves
 > this property for commitments; Feldman VSS does not.
 
+## Quorum Systems and Access Structures
+
+Peleg, D. and Wool, A. (1995). "Crumbling Walls Do Not Make Good Building
+Material." Unpublished manuscript.
+
+> Constructs quorum systems with optimal trade-offs between quorum size,
+> availability, and load. The "crumbling wall" construction arranges
+> elements in rows of varying widths; a quorum is one full row plus one
+> representative from every row below. The CWlog system achieves O(lg n)
+> quorum size with Condorcet availability (failure probability → 0 for
+> any element failure probability p < 1/2). Directly relevant to the
+> operator layer: the question "which subsets of shareholders can
+> reconstruct the secret?" is an access structure, and crumbling wall
+> quorums define topology-aware reconstruction policies richer than
+> simple (k, n) thresholds. The availability analysis maps to
+> "probability no valid quorum of shareholders survives," and the load
+> analysis governs how often each shareholder is accessed during
+> reconstruction.
+
+Naor, M. and Wool, A. (1998). "Access Control and Signatures via Quorum
+Secret Sharing." *IEEE Transactions on Parallel and Distributed Systems*,
+vol 9, no 9, pp. 909-922.
+<https://doi.org/10.1109/71.722221>
+
+> The direct bridge between quorum systems and secret sharing. Defines
+> quorum secret sharing: an access structure where the authorized subsets
+> are exactly the quorums of a quorum system. This generalizes Shamir's
+> (k, n) threshold to arbitrary quorum topologies — a crumbling wall
+> quorum system, for instance, encodes "any full team of nodes plus
+> one representative from each other team" as an access policy. If the
+> operator evolves beyond simple thresholds, this is the theoretical
+> framework.
+
 ## Threshold Signatures (Future Extensions)
 
 Gennaro, R. and Goldfeder, S. (2020). "One Round Threshold ECDSA with
