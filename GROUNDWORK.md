@@ -63,7 +63,7 @@ we need to verify that against our specific threat assumptions.
   the protocol structure and see what maps to controller-runtime
   reconciliation loops.
 
-- [ ] **Levrat, Rambaud, Urban (2022)** — "Breaking the t<n/3 Consensus
+- [~] **Levrat, Rambaud, Urban (2022)** — "Breaking the t<n/3 Consensus
   Bound: APSS under Honest Majority"
   <https://eprint.iacr.org/2022/619>
   *Why:* The key result. Proves refresh works without consensus on a
@@ -111,13 +111,13 @@ commitments can be garbage-collected.
 Depends on: **Async Proactive Refresh** — this section only matters if
 we go async. If we stay synchronous, it's interesting but not load-bearing.
 
-- [ ] **Shapiro et al. (2011)** — "A comprehensive study of Convergent
+- [~] **Shapiro et al. (2011)** — "A comprehensive study of Convergent
   and Commutative Replicated Data Types" (INRIA TR 7506)
   *Why:* The CRDT formalization. Need to verify whether share refresh
   satisfies CvRDT or CmRDT axioms precisely, and where the analogy
   breaks (idempotence via Feldman tags vs. algebraic idempotence).
 
-- [ ] **Helland (2007)** — "Life beyond Distributed Transactions: an
+- [~] **Helland (2007)** — "Life beyond Distributed Transactions: an
   Apostate's Opinion" (CIDR)
   *Why:* The "apologize rather than ask permission" framing. Directly
   applicable: instead of preventing partial refresh (synchronous
@@ -171,7 +171,7 @@ interact with the refresh protocol. Can't design this in isolation.
   can be folded into the refresh protocol or requires a separate
   mechanism.
 
-- [ ] **Hu et al. (2025)** — same paper as above, dynamic-committee
+- [~] **Hu et al. (2025)** — same paper as above, dynamic-committee
   focus
   *Why:* Optimistic-case efficiency for committee changes.
 

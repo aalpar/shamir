@@ -1,11 +1,9 @@
 # Shamir
 
-Threshold cryptography library and Kubernetes operator.
+Multi-party threshold cryptography library in Go.
 
-A zero-dependency Go library implementing Shamir's Secret Sharing, Verifiable
-Secret Sharing (Feldman, Pedersen), and proactive share refresh — plus a
-Kubernetes operator that uses these primitives to protect Secrets with
-k-of-n threshold schemes.
+A zero-dependency library implementing Shamir's Secret Sharing, Verifiable
+Secret Sharing (Feldman, Pedersen), and proactive share refresh.
 
 ## Crypto Library
 
@@ -28,10 +26,16 @@ shares, err := sss.Split(secret, 5, 3, f)
 recovered, err := sss.Combine(shares[:3])
 ```
 
+## Domain Types
+
+The `threshold/` package defines platform-independent types for threshold
+secret lifecycle management: scheme selection, share configuration, participant
+tracking, and phase transitions.
+
 ## Status
 
-Early development. The crypto primitives are being implemented first;
-the Kubernetes operator will follow.
+Early development. The crypto primitives are implemented; higher-level
+coordination protocols are next.
 
 ## License
 
