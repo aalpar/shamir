@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,11 +36,11 @@ func TestEvaluate(t *testing.T) {
 		x    int64
 		want int64
 	}{
-		{0, 3},           // f(0) = 3
-		{1, 6},           // f(1) = 3 + 2 + 1 = 6
-		{2, 11},          // f(2) = 3 + 4 + 4 = 11
-		{3, 1},           // f(3) = 3 + 6 + 9 = 18 ≡ 1
-		{4, 11},          // f(4) = 3 + 8 + 16 = 27 ≡ 10... let me compute: 3+8+16=27, 27 mod 17 = 10
+		{0, 3},  // f(0) = 3
+		{1, 6},  // f(1) = 3 + 2 + 1 = 6
+		{2, 11}, // f(2) = 3 + 4 + 4 = 11
+		{3, 1},  // f(3) = 3 + 6 + 9 = 18 ≡ 1
+		{4, 11}, // f(4) = 3 + 8 + 16 = 27 ≡ 10... let me compute: 3+8+16=27, 27 mod 17 = 10
 	}
 	// Fix: f(4) = 3 + 2*4 + 4^2 = 3 + 8 + 16 = 27 mod 17 = 10
 	tests[4] = struct {

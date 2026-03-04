@@ -45,6 +45,10 @@ tools:
 vet:
 	$(GO) vet $(GOFLAGS) $(PACKAGES)
 
+.PHONY: format
+format:
+	@[ -x $(GOLANGCI_LINT) ] && $(GOLANGCI_LINT) fmt || echo "golangci-lint not found; run: make tools"
+
 .PHONY: fmt
 fmt:
 	gofmt -s -w .

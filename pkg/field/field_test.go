@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -86,10 +86,10 @@ func TestAdd(t *testing.T) {
 		a, b, want int64
 	}{
 		{3, 4, 7},
-		{10, 10, 3},   // 20 mod 17 = 3
+		{10, 10, 3}, // 20 mod 17 = 3
 		{0, 5, 5},
-		{16, 1, 0},    // wraps to 0
-		{16, 16, 15},  // 32 mod 17 = 15
+		{16, 1, 0},   // wraps to 0
+		{16, 16, 15}, // 32 mod 17 = 15
 	}
 
 	for _, tt := range tests {
@@ -109,7 +109,7 @@ func TestSub(t *testing.T) {
 		a, b, want int64
 	}{
 		{7, 3, 4},
-		{3, 7, 13},  // -4 mod 17 = 13
+		{3, 7, 13}, // -4 mod 17 = 13
 		{0, 1, 16},
 		{0, 0, 0},
 	}
@@ -152,10 +152,10 @@ func TestMul(t *testing.T) {
 		a, b, want int64
 	}{
 		{3, 4, 12},
-		{5, 5, 8},    // 25 mod 17 = 8
+		{5, 5, 8}, // 25 mod 17 = 8
 		{0, 10, 0},
 		{1, 16, 16},
-		{16, 16, 1},  // (-1)(-1) = 1
+		{16, 16, 1}, // (-1)(-1) = 1
 	}
 
 	for _, tt := range tests {
@@ -203,8 +203,8 @@ func TestExp(t *testing.T) {
 		{2, 0, 1},
 		{2, 1, 2},
 		{2, 4, 16},
-		{2, 5, 15},    // 32 mod 17 = 15
-		{3, 16, 1},    // Fermat's little theorem: a^{p-1} = 1
+		{2, 5, 15}, // 32 mod 17 = 15
+		{3, 16, 1}, // Fermat's little theorem: a^{p-1} = 1
 		{5, 16, 1},
 	}
 
