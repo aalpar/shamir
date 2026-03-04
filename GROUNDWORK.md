@@ -37,7 +37,7 @@ coordinator?
 
 ## 2. Asynchronous Proactive Refresh
 
-The operator's refresh model (synchronous epochs vs. async contributions)
+The library's refresh model (synchronous epochs vs. async contributions)
 is the biggest open design question. These papers determine whether we need
 a "Refreshing" phase in the state machine at all.
 

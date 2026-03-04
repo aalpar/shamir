@@ -81,10 +81,9 @@ Security (CCS '02)*, pp. 88-97.
 > privacy–correctness trade-off in async settings: the adversary can either
 > cause the secret to be lost (preserving privacy) or learn it (preserving
 > correctness), and this trade-off "seems unavoidable in asynchronous
-> networks." Relevant to the operator layer: Kubernetes offers bounded
-> network delays (not truly adversarial async), so the trade-off is
-> manageable, but the protocol structure informs how to handle partial
-> refresh failures. See also: `docs/research/crdt-async-refresh.md`.
+> networks." In practice, networks with bounded delays sidestep the
+> impossibility result, but the protocol structure informs how to handle
+> partial refresh failures. See also: `docs/research/crdt-async-refresh.md`.
 
 Zhou, L., Schneider, F.B., and van Renesse, R. (2005). "APSS: Proactive
 Secret Sharing in Asynchronous Systems." *ACM Transactions on Information
@@ -94,9 +93,8 @@ and System Security (TISSEC)*, vol 8, no 3, pp. 259-286.
 > Full asynchronous proactive refresh protocol. Key advantage over
 > synchronous PSS: inherently more robust against denial-of-service attacks
 > that slow processor execution or delay message delivery. Tolerates attacks
-> that synchronous PSS protocols cannot. Directly relevant to the operator:
-> K8s pod evictions and node failures during refresh are equivalent to async
-> message delays.
+> that synchronous PSS protocols cannot. Node failures during refresh are
+> equivalent to async message delays — directly relevant to `pkg/refresh/`.
 
 Levrat, L., Rambaud, M., and Urban, G. (2022). "Breaking the t<n/3
 Consensus Bound: Asynchronous Dynamic Proactive Secret Sharing under Honest
@@ -119,7 +117,7 @@ Archive*, Report 2022/1586.
 > Two practical constructions for async proactive secret sharing: O(n³)
 > communication complexity and a sortition-based variant at O(cn²). Targets
 > decentralized systems (blockchains) but the protocol structure applies to
-> any distributed threshold key management, including K8s operators.
+> any distributed threshold key management library.
 
 Yurek, T., Luo, L., Gu, J., and Kate, A. (2023). "Robust Asynchronous
 DPSS and its Applications." *Proceedings of the 32nd USENIX Security
@@ -129,9 +127,9 @@ Symposium*, pp. 1537-1554.
 > Robust async dynamic-committee proactive secret sharing (DPSS). Shows
 > that synchronous DPSS protocols (like COBRA) suffer asymptotic
 > performance hits (O(n³) → O(n⁴)) during periods of asynchrony. Async
-> protocols limit damage from network partitions and slow nodes. Relevant
-> to the operator: K8s cluster upgrades, node drains, and network policies
-> can cause transient async behavior.
+> protocols limit damage from network partitions and slow nodes. Transient
+> async behavior arises from any combination of network partitions and slow
+> nodes — a realistic scenario for distributed secret holders.
 
 Hu, J., et al. (2025). "Optimistic Asynchronous Dynamic-committee
 Proactive Secret Sharing." *IACR ePrint Archive*, Report 2025/880.
@@ -154,10 +152,9 @@ Science, vol 1592, pp. 295-310.
 > and distributing shares, all participants jointly generate a shared secret
 > where no single party ever knows the complete secret. Uses Pedersen VSS
 > as a building block — each participant acts as a dealer for a random
-> value, and the final shared secret is the sum. Relevant for the
-> Kubernetes operator's key ceremony workflow, where trusting a single
-> controller with the plaintext secret defeats the purpose of threshold
-> protection.
+> value, and the final shared secret is the sum. Relevant for any key
+> generation workflow where trusting a single dealer with the plaintext
+> secret defeats the purpose of threshold protection.
 
 ## Number Theory Foundations
 
@@ -206,9 +203,9 @@ Material." Unpublished manuscript.
 > elements in rows of varying widths; a quorum is one full row plus one
 > representative from every row below. The CWlog system achieves O(lg n)
 > quorum size with Condorcet availability (failure probability → 0 for
-> any element failure probability p < 1/2). Directly relevant to the
-> operator layer: the question "which subsets of shareholders can
-> reconstruct the secret?" is an access structure, and crumbling wall
+> any element failure probability p < 1/2). The question "which subsets
+> of shareholders can reconstruct the secret?" is an access structure, and
+> crumbling wall
 > quorums define topology-aware reconstruction policies richer than
 > simple (k, n) thresholds. The availability analysis maps to
 > "probability no valid quorum of shareholders survives," and the load
@@ -225,8 +222,8 @@ vol 9, no 9, pp. 909-922.
 > are exactly the quorums of a quorum system. This generalizes Shamir's
 > (k, n) threshold to arbitrary quorum topologies — a crumbling wall
 > quorum system, for instance, encodes "any full team of nodes plus
-> one representative from each other team" as an access policy. If the
-> operator evolves beyond simple thresholds, this is the theoretical
+> one representative from each other team" as an access policy. If this
+> library evolves beyond simple thresholds, this is the theoretical
 > framework.
 
 ### Note on General Access Structures
@@ -255,8 +252,8 @@ Identifiable Abort." *Cryptology ePrint Archive*, Report 2020/540.
 > Threshold ECDSA allowing k-of-n parties to jointly produce a valid
 > ECDSA signature without any party knowing the full signing key.
 > "Identifiable abort" means if a party misbehaves, others can identify
-> who. Relevant for the signing use case: distributed certificate signing
-> or admission webhook signing in Kubernetes without a single key holder.
+> who. Relevant for distributed signing use cases without a single key
+> holder.
 
 Boneh, D., Lynn, B., and Shacham, H. (2001). "Short Signatures from
 the Weil Pairing." *Advances in Cryptology — ASIACRYPT 2001*, Lecture
@@ -267,7 +264,7 @@ Notes in Computer Science, vol 2248, pp. 514-532.
 > curves. BLS signatures are naturally threshold-friendly — unlike
 > ECDSA, threshold BLS requires no interactive protocol beyond share
 > distribution, because signature shares combine linearly. A natural
-> candidate for threshold signing in the Kubernetes operator.
+> candidate for threshold signing in this library.
 
 ## Conflict-Free Replicated Data Types (CRDTs)
 

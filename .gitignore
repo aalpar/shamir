@@ -1,27 +1,8 @@
-# Binaries
+.serena/
+.idea/
+.claude/
+CLAUDE.local.md
+private/
 bin/
 dist/
-
-# Test
-cover.out
-cover_detail.out
-coverage.out
-controller_coverage.out
-
-# Dependencies
-vendor/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Environment
-.env
-.envrc
+tools/bin/

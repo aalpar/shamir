@@ -22,6 +22,8 @@ Zero external dependencies. Backed by `math/big` from stdlib.
 
 Dependency graph: `refresh → vss → sss → polynomial → field`
 
+External dependency: `github.com/aalpar/crdt` (sibling module in go.work)
+
 ### Layer 2: Domain Types (`threshold/`)
 
 Plain Go structs representing threshold secret lifecycle — no platform or deployment dependencies.
