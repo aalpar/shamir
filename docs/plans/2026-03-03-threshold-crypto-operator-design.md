@@ -1,13 +1,17 @@
 # Threshold Cryptography Operator — Design
 
+**Status: DEFERRED** — K8s operator is out of scope for v0.x. Focus is on
+the crypto library (`pkg/`) and CRDT-based async refresh. This plan is
+archived for reference when the operator layer is revisited.
+
 Date: 2026-03-03
 
 ## Overview
 
-`github.com/aalpar/shamir` — a threshold cryptography library and Kubernetes
-operator. Two layers: a zero-dependency Go crypto library (`pkg/`) and a
-Kubernetes operator (`internal/` + `api/`) that uses it to protect Secrets
-with k-of-n threshold schemes.
+`github.com/aalpar/shamir` — a threshold cryptography library. The `pkg/`
+layer is the current focus. The Kubernetes operator described below is a
+future extension that would use the library to protect Secrets with k-of-n
+threshold schemes.
 
 ## Architecture
 

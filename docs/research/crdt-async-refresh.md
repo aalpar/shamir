@@ -32,7 +32,7 @@ be detected and rejected. This is the same pattern as an OR-Set CRDT: each
 operation has a unique tag, you track which tags you've applied, merge is
 "apply all tags you haven't seen."
 
-## Implications for the Operator
+## Implications for Coordination
 
 ### Current Model (Synchronous Epochs)
 
@@ -55,32 +55,32 @@ Active (continuously accepting refresh contributions)
   └── Degraded (< k holders reachable)
 ```
 
-No "Refreshing" phase. No global synchronization point. Each ShareHolder
+No "Refreshing" phase. No global synchronization point. Each shareholder
 independently:
 
 1. Generates a `VerifiableZeroSharing` contribution
-2. Broadcasts it (or the controller distributes it)
+2. Broadcasts it (or a coordinator distributes it)
 3. Each holder applies contributions as they arrive (in any order)
 4. Feldman verification prevents tampering
-5. The controller tracks which contributions each holder has applied
+5. The coordinator tracks which contributions each holder has applied
 
 ### Checkpoint / Stable Cut
 
-The controller computes "minimum epoch fully applied across all holders" — the
+The coordinator computes "minimum epoch fully applied across all holders" — the
 component-wise minimum across all holders' contribution sets. Below that cut,
 old Feldman commitments can be garbage collected. This is a stable cut in the
 causal graph: the latest point where all replicas have converged.
 
-Detecting the stable cut requires knowing what every holder has applied. In
-Kubernetes, the controller can read each ShareHolder's status — this is cheap
-coordination (read-only) that enables garbage collection.
+Detecting the stable cut requires knowing what every holder has applied. The
+coordination layer reads each shareholder's state — this is cheap coordination
+(read-only) that enables garbage collection.
 
 ### Privacy-Correctness Trade-off
 
 Cachin et al. (2002) identified an inherent tension in asynchronous refresh:
 you can guarantee privacy or correctness, but not both if the adversary can
-delay messages indefinitely. In a Kubernetes operator (bounded network delays,
-not a truly adversarial async network), this trade-off is manageable.
+delay messages indefinitely. In bounded-delay environments (not truly
+adversarial async networks), this trade-off is manageable.
 
 ## Required Changes to `pkg/refresh/`
 

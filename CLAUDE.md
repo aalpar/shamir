@@ -6,7 +6,7 @@
 
 ## Architecture
 
-Two layers: a zero-dependency crypto library (`pkg/`) and domain types for multi-party coordination (`threshold/`).
+Two layers: a zero-dependency crypto library (`pkg/`) and platform-independent domain types (`threshold/`).
 
 ### Layer 1: Crypto Library (`pkg/`)
 
@@ -24,7 +24,7 @@ Dependency graph: `refresh → vss → sss → polynomial → field`
 
 ### Layer 2: Domain Types (`threshold/`)
 
-Plain Go structs representing threshold secret lifecycle — no platform dependencies.
+Plain Go structs representing threshold secret lifecycle — no platform or deployment dependencies.
 
 State machine:
 
