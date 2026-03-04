@@ -50,14 +50,14 @@ func New(coefficients []field.Element) Polynomial {
 // The remaining coefficients are uniformly random over the field.
 func Random(degree int, secret field.Element, f *field.Field) (Polynomial, error) {
 	if degree < 0 {
-		return Polynomial{}, fmt.Errorf("polynomial: negative degree %d", degree)
+		return Polynomial{}, &Error{Op: "Random", Kind: ErrNegativeDegree, Detail: fmt.Sprintf("degree %d", degree)}
 	}
 	coeffs := make([]field.Element, degree+1)
 	coeffs[0] = secret
 	for i := 1; i <= degree; i++ {
 		c, err := f.Rand()
 		if err != nil {
-			return Polynomial{}, fmt.Errorf("polynomial: generating coefficient %d: %w", i, err)
+			return Polynomial{}, &Error{Op: "Random", Detail: fmt.Sprintf("coefficient %d", i), Err: err}
 		}
 		coeffs[i] = c
 	}
@@ -103,7 +103,7 @@ func (p Polynomial) Degree() int {
 func LagrangeZero(points []Point) (field.Element, error) {
 	k := len(points)
 	if k == 0 {
-		return field.Element{}, fmt.Errorf("polynomial: no points for interpolation")
+		return field.Element{}, &Error{Op: "LagrangeZero", Kind: ErrNoPoints}
 	}
 
 	f := points[0].X.Field()
@@ -120,7 +120,7 @@ func LagrangeZero(points []Point) (field.Element, error) {
 			den = den.Mul(points[m].X.Sub(points[j].X)) // x_m - x_j
 		}
 		if den.IsZero() {
-			return field.Element{}, fmt.Errorf("polynomial: duplicate x-coordinate at index %d", j)
+			return field.Element{}, &Error{Op: "LagrangeZero", Kind: ErrDuplicateX, Detail: fmt.Sprintf("index %d", j)}
 		}
 		lagrange := num.Mul(den.Inv())
 		result = result.Add(points[j].Y.Mul(lagrange))

@@ -73,7 +73,7 @@ func (f *Field) One() Element {
 func (f *Field) Rand() (Element, error) {
 	v, err := rand.Int(rand.Reader, f.p)
 	if err != nil {
-		return Element{}, fmt.Errorf("field: random generation: %w", err)
+		return Element{}, &Error{Op: "Rand", Kind: ErrRandom, Err: err}
 	}
 	return Element{v: v, field: f}, nil
 }

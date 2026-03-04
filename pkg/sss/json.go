@@ -15,7 +15,6 @@ package sss
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/big"
 
 	"github.com/aalpar/shamir/pkg/field"
@@ -44,22 +43,22 @@ func (s Share) MarshalJSON() ([]byte, error) {
 func (s *Share) UnmarshalJSON(data []byte) error {
 	var raw shareJSON
 	if err := json.Unmarshal(data, &raw); err != nil {
-		return fmt.Errorf("sss: unmarshal share: %w", err)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Err: err}
 	}
 
 	p, ok := new(big.Int).SetString(raw.P, 16)
 	if !ok || p.Sign() <= 0 {
-		return fmt.Errorf("sss: invalid prime %q", raw.P)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: "invalid prime " + raw.P}
 	}
 
 	x, ok := new(big.Int).SetString(raw.X, 16)
 	if !ok {
-		return fmt.Errorf("sss: invalid x %q", raw.X)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: "invalid x " + raw.X}
 	}
 
 	y, ok := new(big.Int).SetString(raw.Y, 16)
 	if !ok {
-		return fmt.Errorf("sss: invalid y %q", raw.Y)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: "invalid y " + raw.Y}
 	}
 
 	f := field.New(p)

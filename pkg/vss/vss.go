@@ -33,7 +33,6 @@
 package vss
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/aalpar/shamir/pkg/field"
@@ -60,14 +59,14 @@ type Group struct {
 // generators with unknown log_g(h).
 func NewGroup(p, g, h *big.Int) (*Group, error) {
 	if !p.ProbablyPrime(20) {
-		return nil, fmt.Errorf("vss: p is not prime")
+		return nil, &Error{Op: "NewGroup", Kind: ErrNotPrime}
 	}
 
 	q := new(big.Int).Sub(p, bigOne)
 	q.Rsh(q, 1) // q = (p-1)/2
 
 	if !q.ProbablyPrime(20) {
-		return nil, fmt.Errorf("vss: p is not a safe prime (q = %s is not prime)", q)
+		return nil, &Error{Op: "NewGroup", Kind: ErrNotSafePrime, Detail: "q = " + q.String()}
 	}
 
 	if err := validateGenerator(g, q, p, "g"); err != nil {
@@ -86,7 +85,7 @@ func NewGroup(p, g, h *big.Int) (*Group, error) {
 			return nil, err
 		}
 		if g.Cmp(h) == 0 {
-			return nil, fmt.Errorf("vss: g and h must be distinct generators")
+			return nil, &Error{Op: "NewGroup", Kind: ErrGeneratorsEqual}
 		}
 		grp.h = new(big.Int).Set(h)
 	}
@@ -96,11 +95,11 @@ func NewGroup(p, g, h *big.Int) (*Group, error) {
 
 func validateGenerator(gen, q, p *big.Int, name string) error {
 	if gen.Cmp(bigOne) <= 0 || gen.Cmp(p) >= 0 {
-		return fmt.Errorf("vss: generator %s out of range (1, p)", name)
+		return &Error{Op: "NewGroup", Kind: ErrGeneratorRange, Detail: name}
 	}
 	// Must have order q: gen^q ≡ 1 (mod p).
 	if new(big.Int).Exp(gen, q, p).Cmp(bigOne) != 0 {
-		return fmt.Errorf("vss: %s does not have order q in Z_p*", name)
+		return &Error{Op: "NewGroup", Kind: ErrGeneratorOrder, Detail: name}
 	}
 	return nil
 }

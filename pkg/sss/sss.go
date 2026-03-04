@@ -45,15 +45,15 @@ type Share struct {
 //   - The secret must be an element of the given field
 func Split(secret field.Element, n, k int, f *field.Field) ([]Share, error) {
 	if k < 2 {
-		return nil, fmt.Errorf("sss: threshold k=%d must be >= 2", k)
+		return nil, &Error{Op: "Split", Kind: ErrThreshold, Detail: fmt.Sprintf("k=%d must be >= 2", k)}
 	}
 	if k > n {
-		return nil, fmt.Errorf("sss: threshold k=%d exceeds share count n=%d", k, n)
+		return nil, &Error{Op: "Split", Kind: ErrThreshold, Detail: fmt.Sprintf("k=%d exceeds n=%d", k, n)}
 	}
 
 	poly, err := polynomial.Random(k-1, secret, f)
 	if err != nil {
-		return nil, fmt.Errorf("sss: generating polynomial: %w", err)
+		return nil, &Error{Op: "Split", Err: err}
 	}
 
 	points := poly.EvaluateAt(n, f)
@@ -72,7 +72,7 @@ func Split(secret field.Element, n, k int, f *field.Field) ([]Share, error) {
 // as the scheme is information-theoretically secure).
 func Combine(shares []Share) (field.Element, error) {
 	if len(shares) == 0 {
-		return field.Element{}, fmt.Errorf("sss: no shares provided")
+		return field.Element{}, &Error{Op: "Combine", Kind: ErrNoShares}
 	}
 
 	points := make([]polynomial.Point, len(shares))
@@ -82,7 +82,7 @@ func Combine(shares []Share) (field.Element, error) {
 
 	secret, err := polynomial.LagrangeZero(points)
 	if err != nil {
-		return field.Element{}, fmt.Errorf("sss: reconstruction: %w", err)
+		return field.Element{}, &Error{Op: "Combine", Err: err}
 	}
 	return secret, nil
 }

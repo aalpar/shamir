@@ -32,16 +32,16 @@ import (
 // See: BIBLIOGRAPHY.md — Feldman 1987.
 func FeldmanDeal(secret field.Element, n, k int, grp *Group) ([]sss.Share, *Commitment, error) {
 	if k < 2 {
-		return nil, nil, fmt.Errorf("vss: threshold k=%d must be >= 2", k)
+		return nil, nil, &Error{Op: "FeldmanDeal", Kind: ErrThreshold, Detail: fmt.Sprintf("k=%d must be >= 2", k)}
 	}
 	if k > n {
-		return nil, nil, fmt.Errorf("vss: threshold k=%d exceeds share count n=%d", k, n)
+		return nil, nil, &Error{Op: "FeldmanDeal", Kind: ErrThreshold, Detail: fmt.Sprintf("k=%d exceeds n=%d", k, n)}
 	}
 
 	// Generate random polynomial f(x) with f(0) = secret.
 	poly, err := polynomial.Random(k-1, secret, grp.f)
 	if err != nil {
-		return nil, nil, fmt.Errorf("vss: generating polynomial: %w", err)
+		return nil, nil, &Error{Op: "FeldmanDeal", Err: err}
 	}
 
 	// Evaluate at x = 1..n to produce shares.

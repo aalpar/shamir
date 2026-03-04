@@ -38,29 +38,29 @@ import (
 // See: BIBLIOGRAPHY.md — Pedersen 1991.
 func PedersenDeal(secret field.Element, n, k int, grp *Group) ([]PedersenShare, *Commitment, error) {
 	if grp.h == nil {
-		return nil, nil, fmt.Errorf("vss: Pedersen requires a second generator h")
+		return nil, nil, &Error{Op: "PedersenDeal", Kind: ErrNoSecondGenerator}
 	}
 	if k < 2 {
-		return nil, nil, fmt.Errorf("vss: threshold k=%d must be >= 2", k)
+		return nil, nil, &Error{Op: "PedersenDeal", Kind: ErrThreshold, Detail: fmt.Sprintf("k=%d must be >= 2", k)}
 	}
 	if k > n {
-		return nil, nil, fmt.Errorf("vss: threshold k=%d exceeds share count n=%d", k, n)
+		return nil, nil, &Error{Op: "PedersenDeal", Kind: ErrThreshold, Detail: fmt.Sprintf("k=%d exceeds n=%d", k, n)}
 	}
 
 	// Generate secret polynomial f(x) with f(0) = secret.
 	fPoly, err := polynomial.Random(k-1, secret, grp.f)
 	if err != nil {
-		return nil, nil, fmt.Errorf("vss: generating secret polynomial: %w", err)
+		return nil, nil, &Error{Op: "PedersenDeal", Err: err}
 	}
 
 	// Generate blinding polynomial r(x) with random r(0).
 	r0, err := grp.f.Rand()
 	if err != nil {
-		return nil, nil, fmt.Errorf("vss: generating blinding constant: %w", err)
+		return nil, nil, &Error{Op: "PedersenDeal", Err: err}
 	}
 	rPoly, err := polynomial.Random(k-1, r0, grp.f)
 	if err != nil {
-		return nil, nil, fmt.Errorf("vss: generating blinding polynomial: %w", err)
+		return nil, nil, &Error{Op: "PedersenDeal", Err: err}
 	}
 
 	// Evaluate both polynomials at x = 1..n.

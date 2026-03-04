@@ -11,17 +11,17 @@ Foundation work that unblocks the CLI and exposes gaps in existing code.
 
 ### 0.1 Serialization Format
 
-No serialization exists. The CLI, any network protocol, and persistence
-all need a wire format for shares, commitments, and contributions.
+JSON serialization with hex-encoded big.Int values.
 
-- [ ] Design serialization for `sss.Share` (X, Y as big.Int)
-- [ ] Design serialization for `vss.Commitment` ([]big.Int)
+- [x] Design serialization for `sss.Share` (X, Y as big.Int) — `pkg/sss/json.go`
+- [x] Design serialization for `vss.Commitment` ([]big.Int) — `pkg/vss/json.go`
+- [x] Design serialization for `vss.PedersenShare` — `pkg/vss/json.go`
 - [ ] Design serialization for `refresh.Contribution` ([]SubShare + Commitment)
-- [ ] Decide format: JSON for human-readable CLI output, binary for efficiency?
-      Or both? (JSON for CLI, binary for library consumers)
+- [x] Decide format: JSON with hex strings for first pass
 - [ ] Implement `encoding.TextMarshaler`/`TextUnmarshaler` on key types
-- [ ] Tests: round-trip serialization for each type
-- [ ] Tests: malformed input rejection (truncated, wrong field, etc.)
+- [x] Tests: round-trip serialization for `sss.Share` — `pkg/sss/json_test.go`
+- [x] Tests: malformed input rejection for `sss.Share` — `pkg/sss/json_test.go`
+- [ ] Tests: round-trip and malformed input for `vss.Commitment`, `vss.PedersenShare`
 
 **Decision**: field elements are `math/big.Int` — use hex encoding to
 avoid base-10 ambiguity at large sizes. Commitment values are also
@@ -36,21 +36,21 @@ embedding them in every commitment is verbose.
 
 ### 0.2 threshold/ Domain Type Tests
 
-`threshold/` has zero test coverage. The types are simple now but will
-grow (state machine transitions, validation).
+Tests in `threshold/threshold_test.go`.
 
-- [ ] Test Config validation: k >= 2, k <= n, valid Scheme
-- [ ] Test Phase transitions: define which transitions are legal
-- [ ] Test Holder: ID uniqueness, Ready semantics
+- [x] Test Config validation: k >= 2, k <= n, valid Scheme
+- [x] Test Phase transitions: define which transitions are legal
+- [x] Test Holder: ID uniqueness, Ready semantics
 
 ### 0.3 Error Types
 
-Currently using `fmt.Errorf` everywhere. For a library, callers need
-typed errors to handle specific failure modes.
+Per-package `Error` struct + sentinel vars in `errors.go` files.
+Callers use `errors.Is` for sentinels, `errors.As` for typed detail.
+`Unwrap() []error` returns both Kind (sentinel) and Err (wrapped cause).
 
-- [ ] Define error types in each package (or a shared `errors` package)
-- [ ] Replace `fmt.Errorf` with typed errors at package boundaries
-- [ ] Tests: verify error types with `errors.Is` / `errors.As`
+- [x] Define error types in each package — `pkg/*/errors.go`
+- [x] Replace `fmt.Errorf` with typed errors at package boundaries
+- [x] Tests: verify error types with `errors.Is` / `errors.As` — `pkg/*/errors_test.go`
 
 ---
 
@@ -229,6 +229,11 @@ Blocked on 5.1 decisions.
 - [ ] Test: committee change during active refresh epoch
 
 ---
+
+## 6 Other
+
+- [ ] &Error constructors
+- [ ] Put error sentinal names (Op:) in constants
 
 ## Future (Not Planned)
 

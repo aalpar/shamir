@@ -34,7 +34,7 @@ type commitmentJSON struct {
 // the group parameters so the receiver can verify without out-of-band context.
 func (c *Commitment) MarshalJSON() ([]byte, error) {
 	if c.grp == nil {
-		return nil, fmt.Errorf("vss: commitment has no group (was it created by FeldmanDeal or PedersenDeal?)")
+		return nil, &Error{Op: "MarshalJSON", Kind: ErrNoGroup}
 	}
 	values := make([]string, len(c.Values))
 	for i, v := range c.Values {
@@ -56,40 +56,40 @@ func (c *Commitment) MarshalJSON() ([]byte, error) {
 func (c *Commitment) UnmarshalJSON(data []byte) error {
 	var wire commitmentJSON
 	if err := json.Unmarshal(data, &wire); err != nil {
-		return fmt.Errorf("vss: unmarshal commitment: %w", err)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Err: err}
 	}
 
 	p, ok := new(big.Int).SetString(wire.P, 16)
 	if !ok || p.Sign() <= 0 {
-		return fmt.Errorf("vss: invalid group prime p %q", wire.P)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: "invalid prime p " + wire.P}
 	}
 
 	g, ok := new(big.Int).SetString(wire.G, 16)
 	if !ok || g.Sign() <= 0 {
-		return fmt.Errorf("vss: invalid generator g %q", wire.G)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: "invalid generator g " + wire.G}
 	}
 
 	var h *big.Int
 	if wire.H != "" {
 		h, ok = new(big.Int).SetString(wire.H, 16)
 		if !ok || h.Sign() <= 0 {
-			return fmt.Errorf("vss: invalid generator h %q", wire.H)
+			return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: "invalid generator h " + wire.H}
 		}
 	}
 
 	grp, err := NewGroup(p, g, h)
 	if err != nil {
-		return fmt.Errorf("vss: reconstructing group: %w", err)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Err: err}
 	}
 
 	values := make([]*big.Int, len(wire.Values))
 	for i, s := range wire.Values {
 		v, ok := new(big.Int).SetString(s, 16)
 		if !ok {
-			return fmt.Errorf("vss: invalid commitment value[%d] %q", i, s)
+			return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: fmt.Sprintf("invalid value[%d] %s", i, s)}
 		}
 		if v.Sign() < 0 || v.Cmp(p) >= 0 {
-			return fmt.Errorf("vss: commitment value[%d] out of range [0, p)", i)
+			return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: fmt.Sprintf("value[%d] out of range [0, p)", i)}
 		}
 		values[i] = v
 	}
@@ -124,27 +124,27 @@ func (s *PedersenShare) MarshalJSON() ([]byte, error) {
 func (s *PedersenShare) UnmarshalJSON(data []byte) error {
 	var wire pedersenShareJSON
 	if err := json.Unmarshal(data, &wire); err != nil {
-		return fmt.Errorf("vss: unmarshal pedersen share: %w", err)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Err: err}
 	}
 
 	q, ok := new(big.Int).SetString(wire.Q, 16)
 	if !ok || q.Sign() <= 0 {
-		return fmt.Errorf("vss: invalid field prime q %q", wire.Q)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: "invalid prime q " + wire.Q}
 	}
 
 	x, ok := new(big.Int).SetString(wire.X, 16)
 	if !ok {
-		return fmt.Errorf("vss: invalid x %q", wire.X)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: "invalid x " + wire.X}
 	}
 
 	y, ok := new(big.Int).SetString(wire.Y, 16)
 	if !ok {
-		return fmt.Errorf("vss: invalid y %q", wire.Y)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: "invalid y " + wire.Y}
 	}
 
 	t, ok := new(big.Int).SetString(wire.T, 16)
 	if !ok {
-		return fmt.Errorf("vss: invalid t %q", wire.T)
+		return &Error{Op: "UnmarshalJSON", Kind: ErrUnmarshal, Detail: "invalid t " + wire.T}
 	}
 
 	f := field.New(q)

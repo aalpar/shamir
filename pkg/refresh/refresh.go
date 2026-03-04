@@ -70,15 +70,15 @@ type Contribution struct {
 // Requirements: 2 <= k <= n.
 func ZeroSharing(n, k int, f *field.Field) ([]SubShare, error) {
 	if k < 2 {
-		return nil, fmt.Errorf("refresh: threshold k=%d must be >= 2", k)
+		return nil, &Error{Op: "ZeroSharing", Kind: ErrThreshold, Detail: fmt.Sprintf("k=%d must be >= 2", k)}
 	}
 	if k > n {
-		return nil, fmt.Errorf("refresh: threshold k=%d exceeds share count n=%d", k, n)
+		return nil, &Error{Op: "ZeroSharing", Kind: ErrThreshold, Detail: fmt.Sprintf("k=%d exceeds n=%d", k, n)}
 	}
 
 	poly, err := polynomial.Random(k-1, f.Zero(), f)
 	if err != nil {
-		return nil, fmt.Errorf("refresh: generating zero polynomial: %w", err)
+		return nil, &Error{Op: "ZeroSharing", Err: err}
 	}
 
 	points := poly.EvaluateAt(n, f)
@@ -102,7 +102,7 @@ func Apply(share sss.Share, deltas []SubShare) (sss.Share, error) {
 	y := share.Y
 	for i, d := range deltas {
 		if !d.X.Equal(share.X) {
-			return sss.Share{}, fmt.Errorf("refresh: sub-share %d has X=%s, want %s", i, d.X, share.X)
+			return sss.Share{}, &Error{Op: "Apply", Kind: ErrXMismatch, Detail: fmt.Sprintf("sub-share %d has X=%s, want %s", i, d.X, share.X)}
 		}
 		y = y.Add(d.Delta)
 	}
@@ -120,7 +120,7 @@ func VerifiableZeroSharing(n, k int, grp *vss.Group) (*Contribution, error) {
 	zero := grp.Field().Zero()
 	shares, commitment, err := vss.FeldmanDeal(zero, n, k, grp)
 	if err != nil {
-		return nil, fmt.Errorf("refresh: verifiable zero sharing: %w", err)
+		return nil, &Error{Op: "VerifiableZeroSharing", Err: err}
 	}
 
 	subs := make([]SubShare, n)
@@ -158,7 +158,7 @@ func UpdateCommitment(original *vss.Commitment, deltas []*vss.Commitment, grp *v
 	k := len(original.Values)
 	for i, dc := range deltas {
 		if len(dc.Values) != k {
-			return nil, fmt.Errorf("refresh: delta commitment %d has %d values, want %d", i, len(dc.Values), k)
+			return nil, &Error{Op: "UpdateCommitment", Kind: ErrCommitmentLength, Detail: fmt.Sprintf("delta %d has %d values, want %d", i, len(dc.Values), k)}
 		}
 	}
 
