@@ -20,6 +20,16 @@ import (
 	"github.com/aalpar/shamir/pkg/field"
 )
 
+// MarshalText implements encoding.TextMarshaler using the JSON format.
+func (s Share) MarshalText() ([]byte, error) {
+	return s.MarshalJSON()
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler using the JSON format.
+func (s *Share) UnmarshalText(data []byte) error {
+	return s.UnmarshalJSON(data)
+}
+
 // shareJSON is the wire format for a Share.
 // All values are hex-encoded big integers.
 type shareJSON struct {

@@ -16,12 +16,14 @@ JSON serialization with hex-encoded big.Int values.
 - [x] Design serialization for `sss.Share` (X, Y as big.Int) — `pkg/sss/json.go`
 - [x] Design serialization for `vss.Commitment` ([]big.Int) — `pkg/vss/json.go`
 - [x] Design serialization for `vss.PedersenShare` — `pkg/vss/json.go`
-- [ ] Design serialization for `refresh.Contribution` ([]SubShare + Commitment)
+- [x] Design serialization for `refresh.Contribution` ([]SubShare + Commitment) — `pkg/refresh/json.go`
 - [x] Decide format: JSON with hex strings for first pass
-- [ ] Implement `encoding.TextMarshaler`/`TextUnmarshaler` on key types
+- [x] Implement `encoding.TextMarshaler`/`TextUnmarshaler` on key types
 - [x] Tests: round-trip serialization for `sss.Share` — `pkg/sss/json_test.go`
 - [x] Tests: malformed input rejection for `sss.Share` — `pkg/sss/json_test.go`
-- [ ] Tests: round-trip and malformed input for `vss.Commitment`, `vss.PedersenShare`
+- [x] Tests: malformed input for `vss.Commitment` — `pkg/vss/errors_test.go`
+- [x] Tests: malformed input for `vss.PedersenShare` — `pkg/vss/errors_test.go`
+- [x] Tests: round-trip serialization for `vss.Commitment`, `vss.PedersenShare` — `pkg/vss/json_test.go`
 
 **Decision**: field elements are `math/big.Int` — use hex encoding to
 avoid base-10 ambiguity at large sizes. Commitment values are also
@@ -51,6 +53,11 @@ Callers use `errors.Is` for sentinels, `errors.As` for typed detail.
 - [x] Define error types in each package — `pkg/*/errors.go`
 - [x] Replace `fmt.Errorf` with typed errors at package boundaries
 - [x] Tests: verify error types with `errors.Is` / `errors.As` — `pkg/*/errors_test.go`
+
+### 0.4 Error Cleanup
+
+- [ ] Add `&Error` constructor functions (avoid bare struct literals at call sites)
+- [ ] Put error sentinel Op names in constants
 
 ---
 
@@ -229,11 +236,6 @@ Blocked on 5.1 decisions.
 - [ ] Test: committee change during active refresh epoch
 
 ---
-
-## 6 Other
-
-- [ ] &Error constructors
-- [ ] Put error sentinal names (Op:) in constants
 
 ## Future (Not Planned)
 

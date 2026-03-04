@@ -150,8 +150,10 @@ func (e Element) Exp(exp *big.Int) Element {
 }
 
 // Equal reports whether e and other have the same value in the same field.
+// Field identity is checked by prime value (consistent with sameField),
+// so elements from deserialized fields with the same prime are equal.
 func (e Element) Equal(other Element) bool {
-	return e.field == other.field && e.v.Cmp(other.v) == 0
+	return e.field.p.Cmp(other.field.p) == 0 && e.v.Cmp(other.v) == 0
 }
 
 func (e Element) String() string {

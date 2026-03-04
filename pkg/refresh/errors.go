@@ -11,6 +11,9 @@ var (
 
 	// ErrCommitmentLength indicates delta commitments have inconsistent lengths.
 	ErrCommitmentLength = errors.New("commitment length mismatch")
+
+	// ErrUnmarshal indicates invalid serialized data.
+	ErrUnmarshal = errors.New("invalid serialized data")
 )
 
 // Error represents an error from the refresh package.

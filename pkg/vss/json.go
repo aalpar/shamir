@@ -21,6 +21,26 @@ import (
 	"github.com/aalpar/shamir/pkg/field"
 )
 
+// MarshalText implements encoding.TextMarshaler using the JSON format.
+func (c *Commitment) MarshalText() ([]byte, error) {
+	return c.MarshalJSON()
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler using the JSON format.
+func (c *Commitment) UnmarshalText(data []byte) error {
+	return c.UnmarshalJSON(data)
+}
+
+// MarshalText implements encoding.TextMarshaler using the JSON format.
+func (s *PedersenShare) MarshalText() ([]byte, error) {
+	return s.MarshalJSON()
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler using the JSON format.
+func (s *PedersenShare) UnmarshalText(data []byte) error {
+	return s.UnmarshalJSON(data)
+}
+
 // commitmentJSON is the wire format for a Commitment.
 // All values are hex-encoded big integers. h is omitted for Feldman commitments.
 type commitmentJSON struct {
