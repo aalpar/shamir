@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,8 +50,8 @@ type Group struct {
 	p *big.Int
 	q *big.Int
 	g *big.Int
-	h *big.Int      // second generator for Pedersen; nil if not needed
-	f *field.Field  // GF(q) for polynomial/share arithmetic
+	h *big.Int     // second generator for Pedersen; nil if not needed
+	f *field.Field // GF(q) for polynomial/share arithmetic
 }
 
 // NewGroup creates a group from a safe prime p and generator g.
@@ -143,10 +143,34 @@ func NewCommitment(values []*big.Int, grp *Group) *Commitment {
 }
 
 // Group returns the group associated with this commitment, or nil if none.
+// TODO: does not belong here long term.  Needs to be decoupled from the commitment and shareed out of band.
 func (c *Commitment) Group() *Group { return c.grp }
 
-// PedersenShare extends a basic share with a second component t_i = r(i)
-// from the blinding polynomial.
+// PedersenShare is a share produced by Pedersen VSS (Pedersen 1991).
+//
+// Unlike Feldman VSS (which reuses sss.Share directly), Pedersen VSS
+// requires a second polynomial r(x) — the "blinding polynomial" — to
+// achieve information-theoretic hiding. The dealer generates two random
+// degree-(k-1) polynomials:
+//
+//	f(x)  with f(0) = secret      (the secret polynomial, same as Feldman/SSS)
+//	r(x)  with r(0) = random      (the blinding polynomial, Pedersen-specific)
+//
+// Each shareholder i receives three values:
+//
+//	X  = i           evaluation point (same across both polynomials)
+//	Y  = f(i)        the actual secret share (same as sss.Share.Y)
+//	T  = r(i)        the blinding component (unique to Pedersen)
+//
+// Verification uses both components: the verifier checks that
+// g^{Y} * h^{T} equals the product of commitments C_j^{i^j}, where
+// C_j = g^{a_j} * h^{b_j} and a_j, b_j are coefficients of f and r.
+//
+// For reconstruction, only X and Y are needed — T is used solely for
+// verification and can be discarded once the share is verified.
+//
+// See: PedersenDeal (deal shares), PedersenVerify (verify a share).
+// Reference: BIBLIOGRAPHY.md — Pedersen 1991.
 type PedersenShare struct {
 	X, Y field.Element // share: (i, f(i))
 	T    field.Element // blinding: t_i = r(i)

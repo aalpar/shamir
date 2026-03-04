@@ -158,6 +158,11 @@ Mostly reading and writing, not code.
   - [ ] Document the bounded-delay assumption for async refresh
 - [ ] Review threshold/ state machine against threat model
       (does Degraded → Active make sense? Under what conditions?)
+      Note: Degraded and Failed are currently terminal states with no
+      outgoing edges. Worth revisiting here — you might want Degraded → Active
+      if a degraded holder comes back online and re-shares. Right now they're
+      intentionally dead ends; the test in threshold/ locks that in so you'll
+      notice if you change it.
 
 ---
 
