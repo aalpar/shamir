@@ -86,7 +86,7 @@ func PedersenDeal(secret field.Element, n, k int, grp *Group) ([]PedersenShare, 
 		values[j] = grp.mul(gaj, hbj)
 	}
 
-	return shares, &Commitment{Values: values}, nil
+	return shares, NewCommitment(values, grp), nil
 }
 
 // PedersenVerify checks that a share is consistent with the published

@@ -152,7 +152,7 @@ func UpdateCommitment(original *vss.Commitment, deltas []*vss.Commitment, grp *v
 		for j, v := range original.Values {
 			values[j] = new(big.Int).Set(v)
 		}
-		return &vss.Commitment{Values: values}, nil
+		return vss.NewCommitment(values, grp), nil
 	}
 
 	k := len(original.Values)
@@ -172,5 +172,5 @@ func UpdateCommitment(original *vss.Commitment, deltas []*vss.Commitment, grp *v
 		}
 		values[j] = prod
 	}
-	return &vss.Commitment{Values: values}, nil
+	return vss.NewCommitment(values, grp), nil
 }

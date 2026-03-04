@@ -27,6 +27,13 @@ all need a wire format for shares, commitments, and contributions.
 avoid base-10 ambiguity at large sizes. Commitment values are also
 big.Int. JSON with hex strings is the simplest first pass.
 
+**Decision**: `Commitment` serialization embeds group parameters (`p`, `q`,
+`g`, `h`) for standalone verifiability. Revisit when a protocol layer exists
+— in a real deployment, group parameters would be shared out-of-band and
+embedding them in every commitment is verbose.
+- [ ] Revisit Commitment serialization: embed group params vs. out-of-band
+      when a protocol layer is added (phase 4+ or any network protocol)
+
 ### 0.2 threshold/ Domain Type Tests
 
 `threshold/` has zero test coverage. The types are simple now but will

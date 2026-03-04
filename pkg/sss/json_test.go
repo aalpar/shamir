@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,26 +18,35 @@ import (
 	"math/big"
 	"testing"
 
+	qt "github.com/frankban/quicktest"
+
 	"github.com/aalpar/shamir/pkg/field"
 )
 
 // TestShareJSONRoundtrip is the core design property test:
 // marshal → unmarshal produces a share that still reconstructs
 // the original secret when combined with other shares.
-//
-// TODO(aalpar): implement this test. The structure:
-//   1. Split a known secret into shares over a known field
-//   2. Marshal each share to JSON
-//   3. Unmarshal each share back
-//   4. Combine the unmarshaled shares
-//   5. Verify the reconstructed secret matches the original
-//
-// Consider: what happens if you marshal shares from a small field
-// (p=17) vs a large field (secp256k1 prime)? Both should round-trip.
-// Consider: does the unmarshaled share carry the same field as the
-// original? (It won't be pointer-equal, but it must be value-equal.)
 func TestShareJSONRoundtrip(t *testing.T) {
-	t.Skip("TODO: implement round-trip test")
+	c := qt.New(t)
+	f := field.New(p256)
+	s0, err := f.Rand()
+	c.Assert(err, qt.IsNil)
+
+	t.Logf("secret: %v", s0)
+	srs, err := Split(s0, 5, 3, f)
+	c.Assert(err, qt.IsNil)
+	c.Assert(srs, qt.Not(qt.IsNil))
+
+	decoded := make([]Share, len(srs))
+	for i, s := range srs {
+		bs, err := s.MarshalJSON()
+		c.Assert(err, qt.IsNil)
+		c.Assert(json.Unmarshal(bs, &decoded[i]), qt.IsNil)
+	}
+
+	e1, err := Combine(decoded)
+	c.Assert(err, qt.IsNil)
+	c.Assert(e1.String(), qt.Equals, s0.String())
 }
 
 func TestShareJSONFormat(t *testing.T) {

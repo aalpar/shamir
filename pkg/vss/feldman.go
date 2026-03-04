@@ -57,7 +57,7 @@ func FeldmanDeal(secret field.Element, n, k int, grp *Group) ([]sss.Share, *Comm
 		values[j] = grp.exp(grp.g, coeff.Value())
 	}
 
-	return shares, &Commitment{Values: values}, nil
+	return shares, NewCommitment(values, grp), nil
 }
 
 // FeldmanVerify checks that a share is consistent with the published

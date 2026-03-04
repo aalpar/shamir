@@ -128,9 +128,22 @@ func (grp *Group) mul(a, b *big.Int) *big.Int {
 // Commitment holds the dealer's published values that shareholders use
 // to verify their shares. For Feldman: C_j = g^{a_j}. For Pedersen:
 // C_j = g^{a_j} * h^{b_j}.
+//
+// grp is retained so the commitment can serialize its group parameters
+// and stand alone without out-of-band context.
 type Commitment struct {
 	Values []*big.Int
+	grp    *Group
 }
+
+// NewCommitment creates a Commitment with the given values and group.
+// The group is retained for serialization.
+func NewCommitment(values []*big.Int, grp *Group) *Commitment {
+	return &Commitment{Values: values, grp: grp}
+}
+
+// Group returns the group associated with this commitment, or nil if none.
+func (c *Commitment) Group() *Group { return c.grp }
 
 // PedersenShare extends a basic share with a second component t_i = r(i)
 // from the blinding polynomial.

@@ -94,7 +94,7 @@ func (e Element) IsZero() bool {
 }
 
 func (e Element) sameField(other Element) {
-	if e.field != other.field {
+	if e.field.p.Cmp(other.field.p) != 0 {
 		panic("field: operations on elements from different fields")
 	}
 }
