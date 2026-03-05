@@ -115,6 +115,11 @@ func (c *SplitCommand) splitFeldman(secret *big.Int, stdout, stderr io.Writer) e
 		return fmt.Errorf("split feldman: %w", err)
 	}
 
+	if secret.Cmp(q) >= 0 {
+		return fmt.Errorf("split feldman: secret (%d bits) too large for field (%d bits); increase --bits",
+			secret.BitLen(), q.BitLen())
+	}
+
 	elem := grp.Field().NewElement(secret)
 
 	shares, commitment, err := vss.FeldmanDeal(elem, c.Shares, c.Threshold, grp)
@@ -166,6 +171,11 @@ func (c *SplitCommand) splitPedersen(secret *big.Int, stdout, stderr io.Writer) 
 	grp, err := vss.NewGroup(p, g, h)
 	if err != nil {
 		return fmt.Errorf("split pedersen: %w", err)
+	}
+
+	if secret.Cmp(q) >= 0 {
+		return fmt.Errorf("split pedersen: secret (%d bits) too large for field (%d bits); increase --bits",
+			secret.BitLen(), q.BitLen())
 	}
 
 	elem := grp.Field().NewElement(secret)

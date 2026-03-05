@@ -175,6 +175,36 @@ func TestSplitSSS(t *testing.T) {
 	}
 }
 
+func TestSplitSecretTooLargeForBits(t *testing.T) {
+	// 256-bit secret won't fit in a 64-bit safe prime field
+	bigSecret := make([]byte, 32)
+	for i := range bigSecret {
+		bigSecret[i] = 0xff
+	}
+
+	var stdout, stderr bytes.Buffer
+	cmd := &SplitCommand{Threshold: 3, Shares: 5, Scheme: "feldman", Bits: 64}
+	err := cmd.run(bytes.NewReader(bigSecret), &stdout, &stderr)
+	if err == nil {
+		t.Fatal("expected error when secret exceeds field size")
+	}
+	if !strings.Contains(err.Error(), "too large") {
+		t.Errorf("error should mention 'too large', got: %v", err)
+	}
+
+	// Also verify Pedersen rejects it
+	cmd = &SplitCommand{Threshold: 3, Shares: 5, Scheme: "pedersen", Bits: 64}
+	stdout.Reset()
+	stderr.Reset()
+	err = cmd.run(bytes.NewReader(bigSecret), &stdout, &stderr)
+	if err == nil {
+		t.Fatal("expected error for pedersen when secret exceeds field size")
+	}
+	if !strings.Contains(err.Error(), "too large") {
+		t.Errorf("pedersen error should mention 'too large', got: %v", err)
+	}
+}
+
 func TestSplitFeldman(t *testing.T) {
 	if testing.Short() {
 		t.Skip("safe prime generation is slow")
