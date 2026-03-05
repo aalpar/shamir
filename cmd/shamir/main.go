@@ -46,6 +46,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	if _, err := parser.AddCommand("combine",
+		"Combine shares to reconstruct a secret",
+		"Reconstruct a secret from shares (one JSON per line on stdin)",
+		&CombineCommand{}); err != nil {
+		fmt.Fprintf(os.Stderr, "shamir: %v\n", err)
+		os.Exit(1)
+	}
+
 	_, err := parser.Parse()
 	if err != nil {
 		flagsErr, ok := err.(*flags.Error)

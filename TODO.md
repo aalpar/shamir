@@ -72,11 +72,11 @@ Depends on Phase 0.1 (serialization).
 
 ### 1.2 `combine` Command
 
-- [ ] Parse flags: share inputs (files or stdin)
-- [ ] Deserialize shares
-- [ ] Call `sss.Combine`
-- [ ] Output reconstructed secret
-- [ ] Tests: combine with exactly k shares, with n shares, with < k shares (error)
+- [x] Parse flags: share inputs (files or stdin)
+- [x] Deserialize shares
+- [x] Call `sss.Combine`
+- [x] Output reconstructed secret
+- [x] Tests: combine with exactly k shares, with n shares, with < k shares (error)
 
 ### 1.3 `verify` Command
 
