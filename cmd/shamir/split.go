@@ -14,10 +14,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/big"
 	"os"
+
+	"github.com/aalpar/shamir/pkg/field"
+	"github.com/aalpar/shamir/pkg/sss"
 )
 
 // SplitCommand holds the flags for the split subcommand.
@@ -43,7 +47,50 @@ func (c *SplitCommand) run(stdin io.Reader, stdout, stderr io.Writer) error {
 	}
 
 	secret := new(big.Int).SetBytes(secretBytes)
-	_ = secret
 
-	return fmt.Errorf("split: scheme %s not yet implemented", c.Scheme)
+	switch c.Scheme {
+	case "sss":
+		return c.splitSSS(secret, stdout)
+	case "feldman":
+		return fmt.Errorf("split: feldman not yet implemented")
+	case "pedersen":
+		return fmt.Errorf("split: pedersen not yet implemented")
+	default:
+		return fmt.Errorf("split: unknown scheme %q", c.Scheme)
+	}
+}
+
+func (c *SplitCommand) splitSSS(secret *big.Int, stdout io.Writer) error {
+	p := nextPrime(secret)
+	f := field.New(p)
+	elem := f.NewElement(secret)
+
+	shares, err := sss.Split(elem, c.Shares, c.Threshold, f)
+	if err != nil {
+		return fmt.Errorf("split: %w", err)
+	}
+
+	return writeShares(shares, stdout)
+}
+
+// nextPrime returns the smallest prime > n.
+func nextPrime(n *big.Int) *big.Int {
+	p := new(big.Int).Add(n, big.NewInt(1))
+	if p.Bit(0) == 0 {
+		p.Add(p, big.NewInt(1))
+	}
+	for !p.ProbablyPrime(20) {
+		p.Add(p, big.NewInt(2))
+	}
+	return p
+}
+
+func writeShares(shares []sss.Share, w io.Writer) error {
+	enc := json.NewEncoder(w)
+	for i := range shares {
+		if err := enc.Encode(&shares[i]); err != nil {
+			return fmt.Errorf("split: writing share %d: %w", i, err)
+		}
+	}
+	return nil
 }
