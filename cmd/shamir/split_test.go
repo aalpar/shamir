@@ -37,15 +37,47 @@ func TestSplitRunEmptyStdin(t *testing.T) {
 	}
 }
 
-func TestSplitRunNotYetImplemented(t *testing.T) {
-	cmd := &SplitCommand{Threshold: 3, Shares: 5, Scheme: "pedersen"}
-	var stdout bytes.Buffer
-	err := cmd.run(bytes.NewReader([]byte("hello")), &stdout, nil)
-	if err == nil {
-		t.Fatal("expected 'not yet implemented' error")
+func TestSplitPedersen(t *testing.T) {
+	if testing.Short() {
+		t.Skip("safe prime generation is slow")
 	}
-	if !strings.Contains(err.Error(), "not yet implemented") {
-		t.Errorf("error = %q, want substring %q", err, "not yet implemented")
+
+	secret := []byte("hi")
+	var stdout, stderr bytes.Buffer
+
+	cmd := &SplitCommand{Threshold: 3, Shares: 5, Scheme: "pedersen", Bits: 64}
+	err := cmd.run(bytes.NewReader(secret), &stdout, &stderr)
+	if err != nil {
+		t.Fatalf("run: %v", err)
+	}
+
+	lines := strings.Split(strings.TrimSpace(stdout.String()), "\n")
+	if len(lines) != 5 {
+		t.Fatalf("got %d lines, want 5", len(lines))
+	}
+
+	// PedersenShare has X, Y, T fields
+	shares := make([]vss.PedersenShare, 5)
+	for i, line := range lines {
+		if err := json.Unmarshal([]byte(line), &shares[i]); err != nil {
+			t.Fatalf("share %d: unmarshal: %v", i, err)
+		}
+	}
+
+	if stderr.Len() == 0 {
+		t.Fatal("expected commitment on stderr")
+	}
+	var commitment vss.Commitment
+	if err := json.Unmarshal(stderr.Bytes(), &commitment); err != nil {
+		t.Fatalf("commitment unmarshal: %v", err)
+	}
+
+	// Verify each share against the commitment
+	grp := commitment.Group()
+	for i, share := range shares {
+		if !vss.PedersenVerify(share, &commitment, grp) {
+			t.Errorf("share %d failed Pedersen verification", i)
+		}
 	}
 }
 

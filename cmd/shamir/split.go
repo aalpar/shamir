@@ -55,7 +55,7 @@ func (c *SplitCommand) run(stdin io.Reader, stdout, stderr io.Writer) error {
 	case "feldman":
 		return c.splitFeldman(secret, stdout, stderr)
 	case "pedersen":
-		return fmt.Errorf("split: pedersen not yet implemented")
+		return c.splitPedersen(secret, stdout, stderr)
 	default:
 		return fmt.Errorf("split: unknown scheme %q", c.Scheme)
 	}
@@ -136,4 +136,58 @@ func writeCommitment(c *vss.Commitment, w io.Writer) error {
 	}
 	_, err = w.Write(data)
 	return err
+}
+
+func (c *SplitCommand) splitPedersen(secret *big.Int, stdout, stderr io.Writer) error {
+	p, err := genSafePrime(c.Bits)
+	if err != nil {
+		return fmt.Errorf("split pedersen: %w", err)
+	}
+
+	q := new(big.Int).Sub(p, bigOne)
+	q.Rsh(q, 1)
+
+	g, err := findGenerator(p, q)
+	if err != nil {
+		return fmt.Errorf("split pedersen: %w", err)
+	}
+
+	h, err := findGenerator(p, q)
+	if err != nil {
+		return fmt.Errorf("split pedersen: %w", err)
+	}
+	for g.Cmp(h) == 0 {
+		h, err = findGenerator(p, q)
+		if err != nil {
+			return fmt.Errorf("split pedersen: %w", err)
+		}
+	}
+
+	grp, err := vss.NewGroup(p, g, h)
+	if err != nil {
+		return fmt.Errorf("split pedersen: %w", err)
+	}
+
+	elem := grp.Field().NewElement(secret)
+
+	shares, commitment, err := vss.PedersenDeal(elem, c.Shares, c.Threshold, grp)
+	if err != nil {
+		return fmt.Errorf("split pedersen: %w", err)
+	}
+
+	if err := writePedersenShares(shares, stdout); err != nil {
+		return err
+	}
+
+	return writeCommitment(commitment, stderr)
+}
+
+func writePedersenShares(shares []vss.PedersenShare, w io.Writer) error {
+	enc := json.NewEncoder(w)
+	for i := range shares {
+		if err := enc.Encode(&shares[i]); err != nil {
+			return fmt.Errorf("split: writing share %d: %w", i, err)
+		}
+	}
+	return nil
 }
