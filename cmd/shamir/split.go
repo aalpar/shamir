@@ -22,6 +22,7 @@ import (
 
 	"github.com/aalpar/shamir/pkg/field"
 	"github.com/aalpar/shamir/pkg/sss"
+	"github.com/aalpar/shamir/pkg/vss"
 )
 
 // SplitCommand holds the flags for the split subcommand.
@@ -52,7 +53,7 @@ func (c *SplitCommand) run(stdin io.Reader, stdout, stderr io.Writer) error {
 	case "sss":
 		return c.splitSSS(secret, stdout)
 	case "feldman":
-		return fmt.Errorf("split: feldman not yet implemented")
+		return c.splitFeldman(secret, stdout, stderr)
 	case "pedersen":
 		return fmt.Errorf("split: pedersen not yet implemented")
 	default:
@@ -93,4 +94,46 @@ func writeShares(shares []sss.Share, w io.Writer) error {
 		}
 	}
 	return nil
+}
+
+func (c *SplitCommand) splitFeldman(secret *big.Int, stdout, stderr io.Writer) error {
+	p, err := genSafePrime(c.Bits)
+	if err != nil {
+		return fmt.Errorf("split feldman: %w", err)
+	}
+
+	q := new(big.Int).Sub(p, bigOne)
+	q.Rsh(q, 1)
+
+	g, err := findGenerator(p, q)
+	if err != nil {
+		return fmt.Errorf("split feldman: %w", err)
+	}
+
+	grp, err := vss.NewGroup(p, g, nil)
+	if err != nil {
+		return fmt.Errorf("split feldman: %w", err)
+	}
+
+	elem := grp.Field().NewElement(secret)
+
+	shares, commitment, err := vss.FeldmanDeal(elem, c.Shares, c.Threshold, grp)
+	if err != nil {
+		return fmt.Errorf("split feldman: %w", err)
+	}
+
+	if err := writeShares(shares, stdout); err != nil {
+		return err
+	}
+
+	return writeCommitment(commitment, stderr)
+}
+
+func writeCommitment(c *vss.Commitment, w io.Writer) error {
+	data, err := json.Marshal(c)
+	if err != nil {
+		return fmt.Errorf("split: marshaling commitment: %w", err)
+	}
+	_, err = w.Write(data)
+	return err
 }

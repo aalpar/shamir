@@ -20,8 +20,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aalpar/shamir/pkg/sss"
 	"github.com/jessevdk/go-flags"
+
+	"github.com/aalpar/shamir/pkg/sss"
+	"github.com/aalpar/shamir/pkg/vss"
 )
 
 func TestSplitRunEmptyStdin(t *testing.T) {
@@ -36,7 +38,7 @@ func TestSplitRunEmptyStdin(t *testing.T) {
 }
 
 func TestSplitRunNotYetImplemented(t *testing.T) {
-	cmd := &SplitCommand{Threshold: 3, Shares: 5, Scheme: "feldman"}
+	cmd := &SplitCommand{Threshold: 3, Shares: 5, Scheme: "pedersen"}
 	var stdout bytes.Buffer
 	err := cmd.run(bytes.NewReader([]byte("hello")), &stdout, nil)
 	if err == nil {
@@ -138,5 +140,60 @@ func TestSplitSSS(t *testing.T) {
 	// Stderr should be empty for SSS (no commitment)
 	if stderr.Len() != 0 {
 		t.Errorf("stderr should be empty for SSS, got: %s", stderr.String())
+	}
+}
+
+func TestSplitFeldman(t *testing.T) {
+	if testing.Short() {
+		t.Skip("safe prime generation is slow")
+	}
+
+	secret := []byte("hi")
+	var stdout, stderr bytes.Buffer
+
+	cmd := &SplitCommand{Threshold: 3, Shares: 5, Scheme: "feldman", Bits: 64}
+	err := cmd.run(bytes.NewReader(secret), &stdout, &stderr)
+	if err != nil {
+		t.Fatalf("run: %v", err)
+	}
+
+	// Stdout: 5 share lines
+	lines := strings.Split(strings.TrimSpace(stdout.String()), "\n")
+	if len(lines) != 5 {
+		t.Fatalf("got %d lines, want 5", len(lines))
+	}
+
+	shares := make([]sss.Share, 5)
+	for i, line := range lines {
+		if err := json.Unmarshal([]byte(line), &shares[i]); err != nil {
+			t.Fatalf("share %d: unmarshal: %v", i, err)
+		}
+	}
+
+	// Stderr: commitment JSON
+	if stderr.Len() == 0 {
+		t.Fatal("expected commitment on stderr")
+	}
+	var commitment vss.Commitment
+	if err := json.Unmarshal(stderr.Bytes(), &commitment); err != nil {
+		t.Fatalf("commitment unmarshal: %v", err)
+	}
+
+	// Verify each share against the commitment
+	grp := commitment.Group()
+	for i, share := range shares {
+		if !vss.FeldmanVerify(share, &commitment, grp) {
+			t.Errorf("share %d failed verification", i)
+		}
+	}
+
+	// Combine and verify secret
+	recovered, err := sss.Combine(shares[:3])
+	if err != nil {
+		t.Fatalf("Combine: %v", err)
+	}
+	original := new(big.Int).SetBytes(secret)
+	if recovered.Value().Cmp(original) != 0 {
+		t.Errorf("recovered %s, want %s", recovered.Value(), original)
 	}
 }
