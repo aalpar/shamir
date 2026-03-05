@@ -54,13 +54,6 @@ Callers use `errors.Is` for sentinels, `errors.As` for typed detail.
 - [x] Replace `fmt.Errorf` with typed errors at package boundaries
 - [x] Tests: verify error types with `errors.Is` / `errors.As` — `pkg/*/errors_test.go`
 
-### 0.4 Error Cleanup
-
-- [ ] Add `&Error` constructor functions (avoid bare struct literals at call sites)
-- [ ] Put error sentinel Op names in constants
-
----
-
 ## Phase 1: CLI Implementation (`cmd/shamir/`)
 
 Wire up the three stubbed subcommands using existing crypto packages.
@@ -68,14 +61,14 @@ Depends on Phase 0.1 (serialization).
 
 ### 1.1 `split` Command
 
-- [ ] Parse flags: `--threshold/-k`, `--shares/-n`, `--scheme` (sss|feldman|pedersen)
-- [ ] Read secret from stdin (or `--secret` flag for testing)
-- [ ] Generate safe prime + generator for Feldman/Pedersen schemes
-- [ ] Call `sss.Split` or `vss.FeldmanDeal` / `vss.PedersenDeal`
-- [ ] Serialize and output shares (one per line? one per file?)
-- [ ] For VSS schemes: also output commitment
-- [ ] Tests: split → combine round-trip via CLI
-- [ ] Tests: invalid flag combinations
+- [x] Parse flags: `--threshold/-k`, `--shares/-n`, `--scheme` (sss|feldman|pedersen)
+- [x] Read secret from stdin as raw bytes
+- [x] Generate safe prime + generator for Feldman/Pedersen schemes
+- [x] Call `sss.Split` or `vss.FeldmanDeal` / `vss.PedersenDeal`
+- [x] Serialize and output shares (one JSON per line to stdout)
+- [x] For VSS schemes: output commitment to stderr
+- [x] Tests: split → combine round-trip via CLI
+- [x] Tests: invalid flag combinations
 
 ### 1.2 `combine` Command
 
@@ -234,6 +227,15 @@ Blocked on 5.1 decisions.
 - [ ] Test: remove one shareholder — remaining shares still reconstruct
 - [ ] Test: change threshold (k=3,n=5 → k=4,n=7)
 - [ ] Test: committee change during active refresh epoch
+
+---
+
+## Phase 6: Error Cleanup
+
+Deferred from Phase 0 — low priority housekeeping.
+
+- [ ] Add `&Error` constructor functions (avoid bare struct literals at call sites)
+- [ ] Put error sentinel Op names in constants
 
 ---
 
