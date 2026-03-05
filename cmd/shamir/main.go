@@ -16,36 +16,42 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/jessevdk/go-flags"
 )
 
 // BuildVersion is set at build time via ldflags.
 var BuildVersion = "dev"
 
-func main() {
-	if len(os.Args) < 2 {
-		usage()
-		os.Exit(1)
-	}
-
-	switch os.Args[1] {
-	case "version":
-		fmt.Println(BuildVersion)
-	case "split", "combine", "verify":
-		fmt.Fprintf(os.Stderr, "shamir %s: not yet implemented\n", os.Args[1])
-		os.Exit(1)
-	default:
-		fmt.Fprintf(os.Stderr, "shamir: unknown command %q\n", os.Args[1])
-		usage()
-		os.Exit(1)
-	}
+// GlobalOptions holds top-level flags that apply before any subcommand.
+type GlobalOptions struct {
+	Version func() `short:"V" long:"version" description:"Print version and exit"`
 }
 
-func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: shamir <command>")
-	fmt.Fprintln(os.Stderr, "")
-	fmt.Fprintln(os.Stderr, "Commands:")
-	fmt.Fprintln(os.Stderr, "  split     Split a secret into shares")
-	fmt.Fprintln(os.Stderr, "  combine   Reconstruct a secret from shares")
-	fmt.Fprintln(os.Stderr, "  verify    Verify a share against commitments")
-	fmt.Fprintln(os.Stderr, "  version   Print version")
+func main() {
+	var opts GlobalOptions
+	opts.Version = func() {
+		fmt.Println(BuildVersion)
+		os.Exit(0)
+	}
+
+	parser := flags.NewParser(&opts, flags.Default)
+	parser.Name = "shamir"
+
+	if _, err := parser.AddCommand("split",
+		"Split a secret into shares",
+		"Split a secret into shares using Shamir's Secret Sharing",
+		&SplitCommand{}); err != nil {
+		fmt.Fprintf(os.Stderr, "shamir: %v\n", err)
+		os.Exit(1)
+	}
+
+	_, err := parser.Parse()
+	if err != nil {
+		flagsErr, ok := err.(*flags.Error)
+		if ok && flagsErr.Type == flags.ErrHelp {
+			os.Exit(0)
+		}
+		os.Exit(1)
+	}
 }
